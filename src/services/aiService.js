@@ -45,7 +45,11 @@ export const generateEventProposal = async (userInput) => {
         const response = await model.generateContent(prompt);
 
         const rawText = response.text;
-        const cleanJson = rawText.replace(/```json|```/g, "").trim();
+        const cleanJson = rawText
+            .replace(/```json|```/g, "")
+            .replace(/^[^{]*/, "")
+            .replace(/[^}]*$/, "")
+            .trim();
 
         const parsed = JSON.parse(cleanJson);
 
@@ -58,7 +62,7 @@ export const generateEventProposal = async (userInput) => {
         return parsed;
 
     } catch (err) {
-        console.error("Gemini API Error:", err);
+        console.error("AI API Error:", err);
 
         if (isQuotaExceededError(err)) {
             const quotaError = new Error("AI quota exceeded");
