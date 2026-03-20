@@ -86,7 +86,7 @@ export default function Home() {
             id="eventQuery"
             rows={4}
             className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none resize-none"
-            placeholder="Example: A 10-person leadership retreat in the mountains for 3 days with a $4k budget."
+            placeholder="Describe your event (e.g. 10 people trip to Manali for 3 days under ₹80,000)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
