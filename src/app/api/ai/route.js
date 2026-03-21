@@ -39,14 +39,52 @@ export async function GET(req) {
     }
 }
 
+
 export async function POST(req) {
     try {
         const body = await req.json();
-        const userInput = body?.userInput?.trim();
+        const userInputRaw = body?.userInput;
 
-        if (!userInput) {
+        if (!userInputRaw) {
             return NextResponse.json(
                 { success: false, error: "userInput is required" },
+                { status: 400 }
+            );
+        }
+
+        // Normalize input
+        const userInput = userInputRaw.trim().replace(/\s+/g, " ");
+
+        // Empty / symbols check
+        if (!userInput || /^[^a-zA-Z0-9]+$/.test(userInput)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Please enter a meaningful event description.",
+                },
+                { status: 400 }
+            );
+        }
+
+        if (userInput.length < 10) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Please provide more details (e.g. people, location, budget).",
+                },
+                { status: 400 }
+            );
+        }
+
+        // Relevance check
+        const isValid = /(event|trip|offsite|meeting|conference|team|travel|outing|retreat)/i.test(userInput);
+
+        if (!isValid) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Input must describe an event (e.g. team trip, offsite, conference).",
+                },
                 { status: 400 }
             );
         }
@@ -54,6 +92,21 @@ export async function POST(req) {
         await connectDB();
 
         const proposal = await generateEventProposal(userInput);
+
+        if (
+            !proposal ||
+            !proposal.venueName ||
+            !proposal.location ||
+            !proposal.estimatedCost
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Failed to generate a valid proposal. Please try again.",
+                },
+                { status: 500 }
+            );
+        }
 
         await Event.create({
             userPrompt: userInput,
@@ -69,6 +122,7 @@ export async function POST(req) {
             success: true,
             data: proposal,
         });
+
     } catch (err) {
         console.error("AI Route Error:", err);
 

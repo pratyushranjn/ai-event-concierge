@@ -86,9 +86,20 @@ export default function Home() {
             id="eventQuery"
             rows={4}
             className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none resize-none"
-            placeholder="Describe your event (e.g. 10 people trip to Manali for 3 days under ₹80,000)"
+            placeholder="e.g. 10 people team offsite in Goa for 2 days under ₹50,000"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (error) setError("");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (query.trim() && !loading) {
+                  handleSubmit();
+                }
+              }
+            }}
           />
 
           <button
